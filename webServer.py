@@ -4,50 +4,50 @@ from socket import *
 import sys
 
 def webServer(port=13331):
-  serverSocket = socket(AF_INET, SOCK_STREAM)
+    serverSocket = socket(AF_INET, SOCK_STREAM)
+  
+    # Prepare a server socket
+    serverSocket.bind(("", port))
+  
+    # Listen for incoming connections
+    serverSocket.listen(1)
 
-  # Prepare a server socket
-  serverSocket.bind(("", port))
+    while True:
+        # Establish the connection
+        print('Ready to serve...')
+        connectionSocket, addr = serverSocket.accept()
+    
+        try:
+            message = connectionSocket.recv(1024).decode()  # Receive the HTTP request from the client
+            filename = message.split()[1]
+      
+            # Open the client requested file.
+            try:
+                f = open(filename[1:], 'rb')
+                file_data = f.read()
+                f.close()
 
-  serverSocket.listen(1)  # Listen for incoming connections, with a maximum queue of 1
+                # Prepare HTTP response headers
+                response_headers = "HTTP/1.1 200 OK\r\n"
+                response_headers += "Content-Type: text/html; charset=UTF-8\r\n"
+                response_headers += f"Content-Length: {len(file_data)}\r\n\r\n"
 
-  while True:
-    # Establish the connection
-    #print('Ready to serve...')
-    connectionSocket, addr = serverSocket.accept()  # Accept incoming connections
+                # Send the headers
+                connectionSocket.send(response_headers.encode())
 
-    try:
-      message = connectionSocket.recv(1024).decode()  # Receive and decode the client's request message
-      outputdata = b"Content-Type: text/html; charset=UTF-8\r\n"
-      # Send HTTP response headers
-      response_headers = b"HTTP/1.1 200 OK\r\n" + outputdata + b"\r\n"
-      connectionSocket.send(response_headers)
-      filename = message.split()[1]
-      # Open the client requested file
-      with open(filename[1:], 'rb') as html_file:
-          file_data = html_file.read()
+                # Send the content of the requested file to the client
+                connectionSocket.send(file_data)
 
-      # Send the content of the requested file to the client
-      connectionSocket.send(file_data)
-      html_file.close()  # Close the file
-      connectionSocket.close()  # Close the connection socket
+            except FileNotFoundError:
+                # Send a 404 Not Found response
+                not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n"
+                connectionSocket.send(not_found_response.encode())
 
-    except FileNotFoundError:
-        # If the file is not found, send a 404 error response
-        response_header = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n"
-        connectionSocket.send(response_header.encode())
-        error_message = "<html><body><h1>404 Not Found</h1></body></html>"
-        connectionSocket.send(error_message.encode())
-        # Close the connection socket
-        connectionSocket.close()
+            # Close client socket
+            connectionSocket.close()
 
-
-    except Exception as e:
-            # Handle other exceptions
-            print("Error:", str(e))
-
-    serverSocket.close()
-    sys.exit()
+        except Exception as e:
+            print("Error:", e)
 
 if __name__ == "__main__":
-  webServer(13331)
+    webServer(13331)
