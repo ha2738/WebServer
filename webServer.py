@@ -64,7 +64,8 @@ def webServer(port=13331):
 
         except Exception as e:
             print("Error:", e)
-
+    serverSocket.close()
+    sys.exit()
 
 if __name__ == "__main__":
     webServer(13331)
