@@ -32,10 +32,11 @@ def webServer(port=13331):
                     f.close()
 
                     # Prepare HTTP response headers
+                    outputdata = b"Content-Type: text/html; charset=UTF-8\r\n"
                     response_headers = "HTTP/1.1 200 OK\r\n"
                     response_headers += "Server: MyWebServer\r\n"
                     response_headers += "Connection: close\r\n"
-                    response_headers += "Content-Type: text/html; charset=UTF-8\r\n"
+                    response_headers += outputdata
                     response_headers += f"Content-Length: {len(file_data)}\r\n\r\n"
 
                     # Send the headers
