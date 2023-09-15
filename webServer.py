@@ -21,10 +21,8 @@ def webServer(port=13331):
             # Receive the client's request
             message = connectionSocket.recv(1024).decode()
             filename = message.split()[1]
-
             # Open the client requested file
-            f = open(filename[1:], 'rb')
-
+            f = open(filename[1:])
             # Prepare the HTTP response headers
             outputdata = f.read()
             f.close()
@@ -34,8 +32,8 @@ def webServer(port=13331):
             connectionSocket.send("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n".encode())
 
             # Send the content of the requested file to the client
-            for i in range(0, len(f)):
-                connectionSocket.send([i].encode())
+            for i in range(0, len(outputdata)):
+                connectionSocket.send(outputdata[i].encode())
 
             connectionSocket.send("\r\n".encode())
             # Close the connection socket
